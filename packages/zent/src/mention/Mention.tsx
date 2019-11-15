@@ -5,8 +5,7 @@ import isFunction from 'lodash-es/isFunction';
 import includes from 'lodash-es/includes';
 import isEqual from 'lodash-es/isEqual';
 import throttle from 'lodash-es/throttle';
-import cx from 'classnames';
-import Input, { IInputClearEvent } from '../input';
+import Input, { IInputChangeEvent } from '../input';
 import Popover from '../popover';
 import getCaretCoordinates from '../utils/dom/getCaretCoordinates';
 import isFirefox from '../utils/isFirefox';
@@ -111,12 +110,8 @@ export class Mention extends Component<IMentionProps> {
               position={
                 position === 'bottom' ? this.BottomPosition : this.TopPosition
               }
-              display="inline-block"
-              wrapperClassName={cx(`${prefix}-mention`, className)}
             >
-              <Popover.Trigger.Click
-                getNodeForTriggerRefChange={Utils.getInputNodeForTrigger}
-              >
+              <Popover.Trigger.Click>
                 <Input
                   type={inputType}
                   ref={this.saveInputRef}
@@ -193,9 +188,7 @@ export class Mention extends Component<IMentionProps> {
     });
   };
 
-  onInputChange = (
-    evt: IInputClearEvent | React.ChangeEvent<HTMLInputElement>
-  ) => {
+  onInputChange = (evt: IInputChangeEvent) => {
     this.props.onChange(evt.target.value);
   };
 

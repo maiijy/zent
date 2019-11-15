@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Component, ReactNode } from 'react';
 import cx from 'classnames';
-import Pop, { PopPositions } from '../pop';
+import Pop, { PopPositions } from '../utils/getPosition';
 import Icon from '../icon';
 
 export interface IBlockHeaderProps {
@@ -37,7 +37,6 @@ export class BlockHeader extends Component<IBlockHeaderProps> {
           centerArrow
           position={position}
           content={<div className="zent-block-header__tooltip">{tooltip}</div>}
-          wrapperClassName="zent-block-header__tooltip-trigger"
         >
           <Icon type="help-circle" />
         </Pop>
