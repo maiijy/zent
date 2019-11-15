@@ -16,7 +16,7 @@ import Popover, {
 } from '../popover';
 import { exposePopover } from '../popover/withPopover';
 
-import getPosition, { PopPositions } from './position';
+import getPosition, { PopPositions } from '../utils/getPosition';
 import Action, { IPopActionCallback } from './Action';
 
 const { Trigger } = Popover;
