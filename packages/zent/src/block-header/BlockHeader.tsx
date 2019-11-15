@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Component, ReactNode } from 'react';
 import cx from 'classnames';
-import Pop, { PopPositions } from '../pop';
+import Pop, { PopPositions } from '../utils/getPosition';
 import Icon from '../icon';
 
 export interface IBlockHeaderProps {
