@@ -71,7 +71,7 @@ ReactDOM.render(
 			display: flex;
       justify-content: center;
 
-      .zent-tooltip-wrapper:not(:last-child) {
+      .zent-btn:not(:last-child) {
         margin-right: 10px
       }
     }
@@ -86,10 +86,14 @@ ReactDOM.render(
       display: flex;
       justify-content: center;
       flex-direction: column;
-      height: 100%;
+			height: 100%;
+			
+			.zent-btn {
+				margin-left: 0;
+			}
 
-      .zent-tooltip-wrapper:not(:last-child) {
-        margin-bottom: 10px
+      .zent-btn:not(:last-child) {
+				margin-bottom: 10px;
       }
     }
 

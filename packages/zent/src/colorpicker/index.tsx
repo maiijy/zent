@@ -9,7 +9,6 @@ import { PureComponent } from 'react';
 import cx from 'classnames';
 import ColorBoard from './ColorBoard';
 import SketchPresetColors from './SketchPresetColors';
-import PopoverClickTrigger from './PopoverClickTrigger';
 import Popover from '../popover';
 
 export type PresetColors = string[];
@@ -19,11 +18,11 @@ export interface IColorPickerProps {
   color: string;
   showAlpha?: boolean;
   type?: ColorPickerType;
-  presetColors?: PresetColors;
+  presetColors: PresetColors;
   onChange?: (color: string) => any;
   className?: string;
   wrapperClassName?: string;
-  prefix?: string;
+  prefix: string;
 }
 
 export class ColorPicker extends PureComponent<IColorPickerProps> {
@@ -33,9 +32,6 @@ export class ColorPicker extends PureComponent<IColorPickerProps> {
 
   static defaultProps = {
     showAlpha: false,
-    onChange() {},
-    className: '',
-    wrapperClassName: '',
     prefix: 'zent',
     type: 'default',
     presetColors: [
@@ -65,10 +61,10 @@ export class ColorPicker extends PureComponent<IColorPickerProps> {
     if (typeof color === 'object') {
       transColor = showAlpha ? color.rgba : color.hex;
     }
-    onChange(transColor);
+    onChange && onChange(transColor);
   };
 
-  handleVisibleChange = visible => {
+  handleVisibleChange = (visible: boolean) => {
     this.setState({
       popVisible: visible,
     });
@@ -92,12 +88,11 @@ export class ColorPicker extends PureComponent<IColorPickerProps> {
       <Popover
         className={cx(`${prefix}-color-picker-popover`, className)}
         position={Popover.Position.AutoBottomLeft}
-        display="inline"
         cushion={5}
         visible={popVisible}
         onVisibleChange={this.handleVisibleChange}
       >
-        <PopoverClickTrigger>
+        <Popover.Trigger.Click toggle>
           <div
             className={cx(
               `${prefix}-color-picker`,
@@ -113,7 +108,7 @@ export class ColorPicker extends PureComponent<IColorPickerProps> {
               />
             </div>
           </div>
-        </PopoverClickTrigger>
+        </Popover.Trigger.Click>
         <Popover.Content>
           {type === 'simple' ? (
             <SketchPresetColors

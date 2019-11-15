@@ -50,7 +50,7 @@ class NoneTriggerDemo extends Component {
         >
           <Button type="primary" onClick={this.open}>{i18n.open}</Button>
         </Tooltip>
-		<Button disabled={!this.state.visible} onClick={this.close}>{i18n.btn}</Button>
+	      <Button disabled={!this.state.visible} onClick={this.close}>{i18n.btn}</Button>
       </div>
     );
   }

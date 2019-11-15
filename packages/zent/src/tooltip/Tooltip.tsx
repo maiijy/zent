@@ -2,110 +2,146 @@ import * as React from 'react';
 import { Component } from 'react';
 import cx from 'classnames';
 import noop from 'lodash-es/noop';
-import { PopPositions } from '../pop';
 
-import Popover, { PositionFunction } from '../popover';
+import Popover, {
+  IPositionFunction,
+  IPopoverClickTriggerChildProps,
+  IPopoverClickTriggerProps,
+  IPopoverTriggerProps,
+  IPopoverHoverTriggerChildProps,
+  IPopoverHoverTriggerProps,
+  IPopoverFocusTriggerChildProps,
+  IPopoverFocusTriggerProps,
+} from '../popover';
+import { exposePopover } from '../popover/withPopover';
 
-import NoneTrigger from './NoneTrigger';
-import getPosition from '../utils/getArrowPosition';
+import getPosition, { PopPositions } from '../utils/getPosition';
 
 const { Trigger } = Popover;
 
-export interface ITooltipProps {
-  title: React.ReactNode;
-  trigger?: 'none' | 'click' | 'hover' | 'focus';
-  position?: PopPositions | PositionFunction;
-  cushion?: number;
-  centerArrow?: boolean;
-  className?: string;
-  containerSelector?: string;
-  prefix?: string;
-  visible?: boolean;
-  onVisibleChange?: (visible: boolean) => void;
-  isOutside?: (
-    target: HTMLElement,
-    node: { contentNode: HTMLElement; triggerNode: HTMLElement }
-  ) => boolean;
+export interface ITooltipNoneTriggerProps<Props extends object>
+  extends IPopoverTriggerProps<Props>,
+    ITooltipCommonProps {
+  trigger: 'none';
+}
 
-  // trigger: click
-  closeOnClickOutside?: boolean;
+export interface ITooltipClickTriggerProps<
+  Props extends IPopoverClickTriggerChildProps
+> extends IPopoverClickTriggerProps<Props>, ITooltipCommonProps {
+  trigger: 'click';
+}
 
-  // trigger: hover
-  quirk?: boolean;
+export interface ITooltipHoverTriggerProps<
+  Props extends IPopoverHoverTriggerChildProps
+> extends IPopoverHoverTriggerProps<Props>, ITooltipCommonProps {
+  trigger: 'hover';
   mouseEnterDelay?: number;
   mouseLeaveDelay?: number;
 }
 
-export class Tooltip extends Component<ITooltipProps> {
+export interface ITooltipFocusTriggerProps<
+  Props extends IPopoverFocusTriggerChildProps
+> extends IPopoverFocusTriggerProps<Props>, ITooltipCommonProps {
+  trigger: 'focus';
+}
+
+export interface ITooltipCommonProps {
+  title: React.ReactNode;
+  trigger?: 'none' | 'click' | 'hover' | 'focus';
+  position: PopPositions | IPositionFunction;
+  cushion?: number;
+  centerArrow?: boolean;
+  className?: string;
+  visible?: boolean;
+  containerSelector?: string;
+  onVisibleChange?: (visible: boolean) => void;
+}
+
+export type ITooltipProps =
+  | ITooltipNoneTriggerProps<any>
+  | ITooltipClickTriggerProps<any>
+  | ITooltipHoverTriggerProps<any>
+  | ITooltipFocusTriggerProps<any>;
+
+export interface ITooltipState {
+  confirmPending: boolean;
+  cancelPending: boolean;
+}
+
+export class Tooltip extends Component<ITooltipProps, ITooltipState> {
   static defaultProps = {
     trigger: 'hover',
     position: 'top-center',
     cushion: 10,
-    centerArrow: false,
-    closeOnClickOutside: true,
+    type: 'primary',
     mouseLeaveDelay: 200,
     mouseEnterDelay: 200,
-    className: '',
     containerSelector: 'body',
-    prefix: 'zent',
-    quirk: true,
   };
 
-  popover: Popover;
-  isUnmounted = false;
+  static withPop = exposePopover('pop');
 
-  renderContent() {
-    const { prefix, title } = this.props;
+  private popoverRef = React.createRef<Popover>();
+  private isUnmounted = false;
 
-    return (
-      <Popover.Content>
-        <div className={`${prefix}-tooltip-inner`}>{title}</div>
-        <i className={`${prefix}-tooltip-arrow`} />
-      </Popover.Content>
+  state = {
+    confirmPending: false,
+    cancelPending: false,
+  };
+
+  changePending = (
+    key: keyof ITooltipState,
+    pending: boolean,
+    callback?: () => void
+  ) => {
+    if (this.isUnmounted) {
+      return;
+    }
+
+    this.setState(
+      {
+        [key]: pending,
+      } as any,
+      callback
     );
+  };
+
+  adjustPosition() {
+    const popover = this.popoverRef.current;
+    if (popover) {
+      popover.adjustPosition();
+    }
+  }
+
+  getWrappedPopover() {
+    return this.popoverRef.current;
   }
 
   renderTrigger() {
-    const {
-      trigger,
-      closeOnClickOutside,
-      isOutside,
-      mouseLeaveDelay,
-      mouseEnterDelay,
-      children,
-      quirk,
-    } = this.props;
-
-    if (trigger === 'click') {
-      return (
-        <Trigger.Click autoClose={closeOnClickOutside} isOutside={isOutside}>
-          {children}
-        </Trigger.Click>
-      );
+    const { props } = this;
+    switch (props.trigger) {
+      case 'click':
+        return (
+          <Trigger.Click closeOnClickOutside={props.closeOnClickOutside}>
+            {props.children}
+          </Trigger.Click>
+        );
+      case 'hover':
+        return (
+          <Trigger.Hover
+            showDelay={props.mouseEnterDelay}
+            hideDelay={props.mouseLeaveDelay}
+          >
+            {props.children}
+          </Trigger.Hover>
+        );
+      case 'focus':
+        return <Trigger.Focus>{props.children}</Trigger.Focus>;
+      case 'none':
+        return <Popover.Anchor>{props.children}</Popover.Anchor>;
+      default:
+        throw new Error('Pop trigger not assigned');
     }
-
-    if (trigger === 'hover') {
-      return (
-        <Trigger.Hover
-          showDelay={mouseEnterDelay}
-          hideDelay={mouseLeaveDelay}
-          isOutside={isOutside}
-          quirk={quirk}
-        >
-          {children}
-        </Trigger.Hover>
-      );
-    }
-
-    if (trigger === 'focus') {
-      return <Trigger.Focus>{children}</Trigger.Focus>;
-    }
-
-    if (trigger === 'none') {
-      return <NoneTrigger>{children}</NoneTrigger>;
-    }
-
-    return null;
   }
 
   componentWillUnmount() {
@@ -117,41 +153,39 @@ export class Tooltip extends Component<ITooltipProps> {
       className,
       trigger,
       visible,
-      prefix,
       position,
       cushion,
+      title,
       centerArrow,
       containerSelector,
     } = this.props;
-
-    const cls = cx(`${prefix}-tooltip`, className);
 
     let { onVisibleChange } = this.props;
     if (trigger === 'none') {
       onVisibleChange = onVisibleChange || noop;
     }
 
+    const { confirmPending, cancelPending } = this.state;
+    const closePending = confirmPending || cancelPending;
+
     return (
       <Popover
-        visible={visible}
-        onVisibleChange={onVisibleChange}
-        prefix={prefix}
-        wrapperClassName={`${prefix}-tooltip-wrapper`}
-        className={cls}
+        ref={this.popoverRef}
+        visible={closePending ? true : visible}
+        onVisibleChange={closePending ? noop : onVisibleChange}
+        className={cx('zent-tooltip', className)}
         cushion={cushion}
         position={getPosition(position, centerArrow)}
         containerSelector={containerSelector}
-        ref={this.onPopoverRefChange}
       >
         {this.renderTrigger()}
-        {this.renderContent()}
+        <Popover.Content>
+          <div className="zent-tooltip-inner">{title}</div>
+          <div className="zent-tooltip-arrow" />
+        </Popover.Content>
       </Popover>
     );
   }
-
-  onPopoverRefChange = popoverInstance => {
-    this.popover = popoverInstance;
-  };
 }
 
 export default Tooltip;

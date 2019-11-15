@@ -40,10 +40,18 @@ ReactDOM.render(
 <style>
 	.zent-doc-tooltip-container {
 	    display: flex;
-        justify-content: center;
+      justify-content: center;
 		.zent-tooltip-wrapper {
 			margin-right: 10px;
-		}
+    }
+    
+    .zent-input-wrapper {
+      margin-left: 8px;
+
+      .zent-input {
+        text-align: center;
+      }
+    }
 
 		.zent-doc-tooltip-tag {
 			border: 1px solid #e5e5e5;
